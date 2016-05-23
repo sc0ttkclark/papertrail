@@ -69,6 +69,8 @@ class WP_Papertrail_API {
 
 	/**
 	 * Colorize JSON string.
+	 * 
+	 * @author Japh from the plugin located here: https://github.com/Japh/stream-to-papertrail
 	 *
 	 * @param string $json JSON string.
 	 *
