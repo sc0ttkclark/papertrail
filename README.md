@@ -30,3 +30,11 @@ You will need to define the destination to log to in wp-config.php (see https://
 If you would like to take advantage of colorization of JSON, you can enable it.
 
 `define( 'WP_PAPERTRAIL_COLORIZE', true );`
+
+## Props
+
+Props have to go to Troy Davis (@troy) who came up with the PHP interface to communicate with the Papertrail API.
+
+See the original gist code here: https://gist.github.com/troy/2220679
+
+I also referenced the Stream to Papertrail plugin (https://github.com/Japh/stream-to-papertrail) initially.
