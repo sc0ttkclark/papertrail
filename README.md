@@ -33,7 +33,7 @@ If you would like to take advantage of colorization of JSON, you can enable it.
 
 ## Props
 
-Props have to go to Troy Davis (@troy) who came up with the PHP interface to communicate with the Papertrail API.
+Props have to go to Troy Davis (@troy on GitHub, @troyd on Twitter) who came up with the PHP interface to communicate with the Papertrail API.
 
 See the original gist code here: https://gist.github.com/troy/2220679
 
