@@ -1,5 +1,4 @@
-# papertrail
-Papertrail Logging API for WordPress
+# Papertrail Logging API for WordPress
 
 ## Setup
 
