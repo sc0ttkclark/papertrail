@@ -3,12 +3,23 @@
  * Plugin Name: Papertrail Logging API
  * Plugin URI:  https://github.com/sc0ttkclark/papertrail
  * Description: Papertrail Logging API for WordPress
- * Version:     0.1
+ * Version:     0.2
  * Author:      Scott Kingsley Clark
  * Author URI:  http://scottkclark.com/
  */
 
+// See https://papertrailapp.com/account/destinations
+define( 'WP_PAPERTRAIL_DESTINATION', 'logs4.papertrailapp.com:15100' );
+define( 'WP_PAPERTRAIL_COLORIZE', true );
+
 class WP_Papertrail_API {
+
+	/**
+	 * Socket resource for reuse
+	 *
+	 * @var resource
+	 */
+	protected static $socket;
 
 	/**
 	 * Methods in this class are meant to be called statically
@@ -59,9 +70,12 @@ class WP_Papertrail_API {
 
 		$syslog_message .= ' ' . $json;
 
-		$sock = socket_create( AF_INET, SOCK_DGRAM, SOL_UDP );
-		socket_sendto( $sock, $syslog_message, strlen( $syslog_message ), 0, $destination['hostname'], $destination['port'] );
-		socket_close( $sock );
+		if ( ! self::$socket ) {
+			self::$socket = socket_create( AF_INET, SOCK_DGRAM, SOL_UDP );
+		}
+
+		socket_sendto( self::$socket, $syslog_message, strlen( $syslog_message ), 0, $destination['hostname'], $destination['port'] );
+		//socket_close( self::$socket );
 
 		return true;
 
@@ -69,8 +83,6 @@ class WP_Papertrail_API {
 
 	/**
 	 * Colorize JSON string.
-	 * 
-	 * @author Japh from the plugin located here: https://github.com/Japh/stream-to-papertrail
 	 *
 	 * @param string $json JSON string.
 	 *
