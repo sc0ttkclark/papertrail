@@ -4,7 +4,13 @@
 
 1. Get your destination from your account at https://papertrailapp.com/account/destinations
 2. Install as a plugin or load it up in mu-plugins
-3. Define your settings `WP_PAPERTRAIL_DESTINATION` and `WP_PAPERTRAIL_COLORIZE` (if wanted)
+3. Define your constant in wp-config.php `WP_PAPERTRAIL_DESTINATION`
+
+## Make JSON pretty
+
+You can use this Greasemonkey script to make the JSON logging look much better (and works with Tampermonkey with a small tweak, see comments).
+
+https://gist.github.com/troy/55442ad0d2502f9ac0a7
 
 ## Usage
 
@@ -24,12 +30,6 @@ if ( ! is_wp_error( $success ) ) {
 You will need to define the destination to log to in wp-config.php (see https://papertrailapp.com/account/destinations)
 
 `define( 'WP_PAPERTRAIL_DESTINATION', 'logs1.papertrailapp.com:12345' );`
-
-### Colorize JSON
-
-If you would like to take advantage of colorization of JSON, you can enable it.
-
-`define( 'WP_PAPERTRAIL_COLORIZE', true );`
 
 ## Props
 
