@@ -74,10 +74,16 @@ class WP_Papertrail_API {
 			self::$socket = socket_create( AF_INET, SOCK_DGRAM, SOL_UDP );
 		}
 
-		socket_sendto( self::$socket, $syslog_message, strlen( $syslog_message ), 0, $destination['hostname'], $destination['port'] );
+		$result = socket_sendto( self::$socket, $syslog_message, strlen( $syslog_message ), 0, $destination['hostname'], $destination['port'] );
 		//socket_close( self::$socket );
 
-		return true;
+		$success = false;
+
+		if ( false !== $result ) {
+			$success = true;
+		}
+
+		return $success;
 
 	}
 
