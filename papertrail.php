@@ -10,7 +10,6 @@
 
 // See https://papertrailapp.com/account/destinations
 define( 'WP_PAPERTRAIL_DESTINATION', 'logs4.papertrailapp.com:15100' );
-define( 'WP_PAPERTRAIL_COLORIZE', true );
 
 class WP_Papertrail_API {
 
@@ -54,10 +53,6 @@ class WP_Papertrail_API {
 			return new WP_Error( 'papertrail-invalid-destination', sprintf( __( 'Invalid Papertrail destination (%s >> %s:%s).', 'papertrail' ), WP_PAPERTRAIL_DESTINATION, $destination['hostname'], $destination['port'] ) );
 		}
 
-		if ( defined( 'WP_PAPERTRAIL_COLORIZE' ) && WP_PAPERTRAIL_COLORIZE ) {
-			$json = self::colorize_json( $json );
-		}
-
 		$syslog_message = '<22>' . date_i18n( 'M d H:i:s' );
 
 		if ( $program ) {
@@ -72,9 +67,12 @@ class WP_Papertrail_API {
 
 		if ( ! self::$socket ) {
 			self::$socket = socket_create( AF_INET, SOCK_DGRAM, SOL_UDP );
+
+			socket_connect( self::$socket, $destination['hostname'], $destination['port'] );
 		}
 
-		$result = socket_sendto( self::$socket, $syslog_message, strlen( $syslog_message ), 0, $destination['hostname'], $destination['port'] );
+		$result = socket_send( self::$socket, $syslog_message, strlen( $syslog_message ), 0 );
+
 		//socket_close( self::$socket );
 
 		$success = false;
@@ -84,58 +82,6 @@ class WP_Papertrail_API {
 		}
 
 		return $success;
-
-	}
-
-	/**
-	 * Colorize JSON string.
-	 *
-	 * @param string $json JSON string.
-	 *
-	 * @return string Colorized JSON string.
-	 */
-	protected static function colorize_json( $json ) {
-
-		$seq = array(
-			'reset' => "\033[0m",
-			'color' => "\033[1;%dm",
-			'bold'  => "\033[1m",
-		);
-
-		$fcolor = array(
-			'black'   => "\033[30m",
-			'red'     => "\033[31m",
-			'green'   => "\033[32m",
-			'yellow'  => "\033[33m",
-			'blue'    => "\033[34m",
-			'magenta' => "\033[35m",
-			'cyan'    => "\033[36m",
-			'white'   => "\033[37m",
-		);
-
-		$bcolor = array(
-			'black'   => "\033[40m",
-			'red'     => "\033[41m",
-			'green'   => "\033[42m",
-			'yellow'  => "\033[43m",
-			'blue'    => "\033[44m",
-			'magenta' => "\033[45m",
-			'cyan'    => "\033[46m",
-			'white'   => "\033[47m",
-		);
-
-		$output = $json;
-		$output = preg_replace( '/(":)([0-9]+)/', '$1' . $fcolor['magenta'] . '$2' . $seq['reset'], $output );
-		$output = preg_replace( '/(":)(true|false)/', '$1' . $fcolor['magenta'] . '$2' . $seq['reset'], $output );
-		$output = str_replace( '{"', '{' . $fcolor['green'] . '"', $output );
-		$output = str_replace( ',"', ',' . $fcolor['green'] . '"', $output );
-		$output = str_replace( '":', '"' . $seq['reset'] . ':', $output );
-		$output = str_replace( ':"', ':' . $fcolor['green'] . '"', $output );
-		$output = str_replace( '",', '"' . $seq['reset'] . ',', $output );
-		$output = str_replace( '",', '"' . $seq['reset'] . ',', $output );
-		$output = $seq['reset'] . $output . $seq['reset'];
-
-		return $output;
 
 	}
 
