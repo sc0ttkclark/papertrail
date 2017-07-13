@@ -31,6 +31,14 @@ You will need to define the destination to log to in wp-config.php (see https://
 
 `define( 'WP_PAPERTRAIL_DESTINATION', 'logs1.papertrailapp.com:12345' );`
 
+### Error Logging
+
+You can log PHP errors to Papertrail too, using this easy to set constant:
+
+`define( 'WP_PAPERTRAIL_ERROR_HANDLER', true );`
+
+Please be aware, some codebases produce a large amount of notices, warnings, or other messages even when they aren't displayed on the screen. Be careful with this handler enabled and watch your Papertrail plan as you might approach your limit quickly.
+
 ## Props
 
 Props have to go to Troy Davis (@troy on GitHub, @troyd on Twitter) who came up with the PHP interface to communicate with the Papertrail API.
