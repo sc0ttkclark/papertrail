@@ -9,7 +9,7 @@
  */
 
 // See https://papertrailapp.com/account/destinations
-define( 'WP_PAPERTRAIL_DESTINATION', 'logs4.papertrailapp.com:15100' );
+// define( 'WP_PAPERTRAIL_DESTINATION', 'logs4.papertrailapp.com:15100' );
 
 class WP_Papertrail_API {
 
