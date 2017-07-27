@@ -21,6 +21,29 @@ class WP_Papertrail_API {
 	protected static $socket;
 
 	/**
+	 * An array of error codes and their equivalent string value
+	 *
+	 * @var array
+	 */
+	protected static $codes = array(
+		E_ERROR             => 'E_ERROR',
+		E_WARNING           => 'E_WARNING',
+		E_PARSE             => 'E_PARSE',
+		E_NOTICE            => 'E_NOTICE',
+		E_CORE_ERROR        => 'E_CORE_ERROR',
+		E_CORE_WARNING      => 'E_CORE_WARNING',
+		E_COMPILE_ERROR     => 'E_COMPILE_ERROR',
+		E_COMPILE_WARNING   => 'E_COMPILE_WARNING',
+		E_USER_ERROR        => 'E_USER_ERROR',
+		E_USER_WARNING      => 'E_USER_WARNING',
+		E_USER_NOTICE       => 'E_USER_NOTICE',
+		E_STRICT            => 'E_STRICT',
+		E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
+		E_DEPRECATED        => 'E_DEPRECATED',
+		E_USER_DEPRECATED   => 'E_USER_DEPRECATED',
+	);
+
+	/**
 	 * Methods in this class are meant to be called statically
 	 */
 	private function __construct() {
@@ -51,6 +74,19 @@ class WP_Papertrail_API {
 
 		if ( empty( $destination ) || 2 != count( $destination ) || empty( $destination['hostname'] ) ) {
 			return new WP_Error( 'papertrail-invalid-destination', sprintf( __( 'Invalid Papertrail destination (%s >> %s:%s).', 'papertrail' ), WP_PAPERTRAIL_DESTINATION, $destination['hostname'], $destination['port'] ) );
+		}
+
+		if (
+			defined( 'WP_PAPERTRAIL_LOG_LEVEL' ) &&
+			WP_PAPERTRAIL_LOG_LEVEL &&
+			false !== ( $code = self::codify_error_string( $component ) ) &&
+			! ( WP_PAPERTRAIL_LOG_LEVEL & $code )
+		) {
+			return new WP_Error( 'papertrail-log-level-off', esc_html( sprintf(
+				__( 'The log level %s has been turned off in this configuration. Current log level: %d', 'papertrail' ),
+				self::stringify_error_code( $code ) ),
+				WP_PAPERTRAIL_LOG_LEVEL
+			) );
 		}
 
 		$syslog_message = '<22>' . date_i18n( 'M d H:i:s' );
@@ -136,6 +172,24 @@ class WP_Papertrail_API {
 	}
 
 	/**
+	 * Turn a string representation of an error type into an error code
+	 *
+	 * If the error code doesn't exist in our array, this will return false. $type will get run through basename, so component strings from error logs will
+	 * get handled without any changes necessary to the type value.
+	 *
+	 * @param string $type
+	 *
+	 * @return false|int
+	 */
+	protected static function codify_error_string( $type ) {
+		return array_search( basename( $type ), self::$codes );
+	}
+
+	protected static function stringify_error_code( $code ) {
+		return isset( self::$codes[ $code ] ) ? self::$codes[ $code ] : 'unknown';
+	}
+
+	/**
 	 * Handle error logging to Papertrail
 	 *
 	 * @param int    $id      Error number
@@ -146,70 +200,7 @@ class WP_Papertrail_API {
 	 */
 	public static function error_handler( $id, $message, $file, $line, $context ) {
 
-		$type = 'unknown';
-
-		switch ( $id ) {
-			case E_ERROR: // 1 //
-				$type = 'E_ERROR';
-
-				break;
-			case E_WARNING: // 2 //
-				$type = 'E_WARNING';
-
-				break;
-			case E_PARSE: // 4 //
-				$type = 'E_PARSE';
-
-				break;
-			case E_NOTICE: // 8 //
-				$type = 'E_NOTICE';
-
-				break;
-			case E_CORE_ERROR: // 16 //
-				$type = 'E_CORE_ERROR';
-
-				break;
-			case E_CORE_WARNING: // 32 //
-				$type = 'E_CORE_WARNING';
-
-				break;
-			case E_COMPILE_ERROR: // 64 //
-				$type = 'E_COMPILE_ERROR';
-
-				break;
-			case E_COMPILE_WARNING: // 128 //
-				$type = 'E_COMPILE_WARNING';
-
-				break;
-			case E_USER_ERROR: // 256 //
-				$type = 'E_USER_ERROR';
-
-				break;
-			case E_USER_WARNING: // 512 //
-				$type = 'E_USER_WARNING';
-
-				break;
-			case E_USER_NOTICE: // 1024 //
-				$type = 'E_USER_NOTICE';
-
-				break;
-			case E_STRICT: // 2048 //
-				$type = 'E_STRICT';
-
-				break;
-			case E_RECOVERABLE_ERROR: // 4096 //
-				$type = 'E_RECOVERABLE_ERROR';
-
-				break;
-			case E_DEPRECATED: // 8192 //
-				$type = 'E_DEPRECATED';
-
-				break;
-			case E_USER_DEPRECATED: // 16384 //
-				$type = 'E_USER_DEPRECATED';
-
-				break;
-		}
+		$type = self::stringify_error_code( $id );
 
 		$page_info = array(
 			'error' => sprintf( '%s | %s | %s:%s', $type, $message, $file, $line ),
