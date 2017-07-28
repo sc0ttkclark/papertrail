@@ -39,6 +39,17 @@ You can log PHP errors to Papertrail too, using this easy to set constant:
 
 Please be aware, some codebases produce a large amount of notices, warnings, or other messages even when they aren't displayed on the screen. Be careful with this handler enabled and watch your Papertrail plan as you might approach your limit quickly.
 
+### Log Levels
+
+You can specify the error reporting levels you would like to log to Papertrail by defining the log level constant in `wp-config.php`:
+
+```php
+// log all errors except deprecated errors
+define( 'WP_PAPERTRAIL_LOG_LEVEL', E_ALL & ~E_DEPRECATED );
+```
+
+See [the PHP documentation](https://php.net/manual/en/function.error-reporting.php) for more information on this configuration option.
+
 ## Props
 
 Props have to go to Troy Davis (@troy on GitHub, @troyd on Twitter) who came up with the PHP interface to communicate with the Papertrail API.
