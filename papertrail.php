@@ -84,9 +84,9 @@ class WP_Papertrail_API {
 		) {
 			return new WP_Error( 'papertrail-log-level-off', esc_html( sprintf(
 				__( 'The log level %s has been turned off in this configuration. Current log level: %d', 'papertrail' ),
-				self::stringify_error_code( $code ) ),
+				self::stringify_error_code( $code ),
 				WP_PAPERTRAIL_LOG_LEVEL
-			) );
+			) ) );
 		}
 
 		$syslog_message = '<22>' . date_i18n( 'M d H:i:s' );
