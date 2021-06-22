@@ -3,7 +3,7 @@
  * Plugin Name: Papertrail Logging API
  * Plugin URI:  https://github.com/sc0ttkclark/papertrail
  * Description: Papertrail Logging API for WordPress
- * Version:     0.4
+ * Version:     0.5
  * Author:      Scott Kingsley Clark
  * Author URI:  http://scottkclark.com/
  */
@@ -25,7 +25,7 @@ class WP_Papertrail_API {
 	 *
 	 * @var array
 	 */
-	protected static $codes = array(
+	protected static $codes = [
 		E_ERROR             => 'E_ERROR',
 		E_WARNING           => 'E_WARNING',
 		E_PARSE             => 'E_PARSE',
@@ -41,13 +41,12 @@ class WP_Papertrail_API {
 		E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
 		E_DEPRECATED        => 'E_DEPRECATED',
 		E_USER_DEPRECATED   => 'E_USER_DEPRECATED',
-	);
+	];
 
 	/**
 	 * Methods in this class are meant to be called statically
 	 */
 	private function __construct() {
-
 		// Hulk smash
 
 	}
@@ -63,30 +62,20 @@ class WP_Papertrail_API {
 	 * @return bool|WP_Error True if successful or an WP_Error object with the problem.
 	 */
 	public static function log( $data, $component = '' ) {
-
 		if ( ! defined( 'WP_PAPERTRAIL_DESTINATION' ) || ! WP_PAPERTRAIL_DESTINATION ) {
 			return new WP_Error( 'papertrail-no-destination', __( 'No Papertrail destination set.', 'papertrail' ) );
 		}
 
-		$destination = array_combine( array( 'hostname', 'port' ), explode( ':', WP_PAPERTRAIL_DESTINATION ) );
+		$destination = array_combine( [ 'hostname', 'port' ], explode( ':', WP_PAPERTRAIL_DESTINATION ) );
 		$program     = parse_url( is_multisite() ? network_site_url() : site_url(), PHP_URL_HOST );
 		$json        = json_encode( $data );
 
-		if ( empty( $destination ) || 2 != count( $destination ) || empty( $destination['hostname'] ) ) {
+		if ( empty( $destination ) || 2 !== count( $destination ) || empty( $destination['hostname'] ) ) {
 			return new WP_Error( 'papertrail-invalid-destination', sprintf( __( 'Invalid Papertrail destination (%s >> %s:%s).', 'papertrail' ), WP_PAPERTRAIL_DESTINATION, $destination['hostname'], $destination['port'] ) );
 		}
 
-		if (
-			defined( 'WP_PAPERTRAIL_LOG_LEVEL' ) &&
-			WP_PAPERTRAIL_LOG_LEVEL &&
-			false !== ( $code = self::codify_error_string( $component ) ) &&
-			! ( WP_PAPERTRAIL_LOG_LEVEL & $code )
-		) {
-			return new WP_Error( 'papertrail-log-level-off', esc_html( sprintf(
-				__( 'The log level %s has been turned off in this configuration. Current log level: %d', 'papertrail' ),
-				self::stringify_error_code( $code ),
-				WP_PAPERTRAIL_LOG_LEVEL
-			) ) );
+		if ( defined( 'WP_PAPERTRAIL_LOG_LEVEL' ) && WP_PAPERTRAIL_LOG_LEVEL && false !== ( $code = self::codify_error_string( $component ) ) && ! ( WP_PAPERTRAIL_LOG_LEVEL & $code ) ) {
+			return new WP_Error( 'papertrail-log-level-off', esc_html( sprintf( __( 'The log level %s has been turned off in this configuration. Current log level: %d', 'papertrail' ), self::stringify_error_code( $code ), WP_PAPERTRAIL_LOG_LEVEL ) ) );
 		}
 
 		$syslog_message = '<22>' . date_i18n( 'M d H:i:s' );
@@ -118,7 +107,6 @@ class WP_Papertrail_API {
 		}
 
 		return $success;
-
 	}
 
 	/**
@@ -128,8 +116,7 @@ class WP_Papertrail_API {
 	 *
 	 * @return array
 	 */
-	public static function get_page_info( $page_info = array() ) {
-
+	public static function get_page_info( $page_info = [] ) {
 		// Setup URL
 		$page_info['url'] = 'http://';
 
@@ -168,14 +155,13 @@ class WP_Papertrail_API {
 		}
 
 		return $page_info;
-
 	}
 
 	/**
 	 * Turn a string representation of an error type into an error code
 	 *
-	 * If the error code doesn't exist in our array, this will return false. $type will get run through basename, so component strings from error logs will
-	 * get handled without any changes necessary to the type value.
+	 * If the error code doesn't exist in our array, this will return false. $type will get run through basename, so
+	 * component strings from error logs will get handled without any changes necessary to the type value.
 	 *
 	 * @param string $type
 	 *
@@ -199,27 +185,25 @@ class WP_Papertrail_API {
 	 * @param array  $context Error context
 	 */
 	public static function error_handler( $id, $message, $file, $line, $context ) {
-
 		$type = self::stringify_error_code( $id );
 
-		$page_info = array(
+		$page_info = [
 			'error' => sprintf( '%s | %s | %s:%s', $type, $message, $file, $line ),
-		);
+		];
 
 		$page_info = self::get_page_info( $page_info );
 
-		if ( 'E_ERROR' != $type ) {
+		if ( 'E_ERROR' !== $type ) {
 			unset( $page_info['$_POST'] );
 			unset( $page_info['$_GET'] );
 		}
 
 		self::log( $page_info, 'WP_Papertrail_API/Error/' . $type );
-
 	}
 
 }
 
 // Setup error handler
 if ( defined( 'WP_PAPERTRAIL_ERROR_HANDLER' ) && WP_PAPERTRAIL_ERROR_HANDLER ) {
-	set_error_handler( array( 'WP_Papertrail_API', 'error_handler' ) );
+	set_error_handler( [ 'WP_Papertrail_API', 'error_handler' ] );
 }
